@@ -10,28 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      - name: Launch EC2 Instance
-        run: |
-          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0e0bf53f6def86294 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --associate-public-ip --query 'Instances[0].InstanceId' --output text)
-          echo "Instance ID: $INSTANCE_ID"
-          # Wait for the instance to enter the running state
-          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
-          # Get the public DNS name of the instance
-          PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicDnsName' --output text)
-          echo "Instance Public DNS: $PUBLIC_DNS"
-          echo "PUBLIC_DNS=$PUBLIC_DNS" >> $GITHUB_OUTPUT
-
       - name: SSH and Deploy Application to Instance
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.PUBLIC_DNS }}
+          host: ec2-3-21-247-90.us-east-2.compute.amazonaws.com
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           port: 22
