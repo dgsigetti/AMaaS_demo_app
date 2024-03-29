@@ -31,7 +31,7 @@ jobs:
       - name: SSH and Deploy Application to Instance
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.PUBLIC_IP }}
+          host: ${{ env.PUBLIC_DNS }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           port: 22
