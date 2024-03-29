@@ -13,9 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build Docker Image
-        run: docker build -t 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest .
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -23,10 +20,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
+      - name: Build Docker Image
+        run: docker build -t 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest .
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Push Image to Amazon ECR
         run: |
           docker push 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
-
+        env:
+          ECR_REGISTRY: 851725486855.dkr.ecr.us-east-2.amazonaws.com
+          ECR_REPOSITORY: dans-v1fs
+          IMAGE_TAG: latest
+          
       - name: Launch EC2 Instance
         run: |
           INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0e0bf53f6def86294 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --associate-public-ip --query 'Instances[0].InstanceId' --output text)
