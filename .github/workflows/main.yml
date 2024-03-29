@@ -10,6 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build Docker Image
+        run: docker build -t 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest .
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Push Image to Amazon ECR
+        run: |
+          docker push 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
+        env:
+          ECR_REGISTRY: 851725486855.dkr.ecr.us-east-2.amazonaws.com
+          ECR_REPOSITORY: dans-v1fs
+          IMAGE_TAG: latest
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -38,3 +58,8 @@ jobs:
           protocol: tcp
           timeout: 60s
           command_timeout: 10m
+          script: |
+            docker pull 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
+            docker stop dans-v1fs || true
+            docker rm dans-v1fs || true
+            docker run -d --name dans-v1fs -p 80:5000 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
