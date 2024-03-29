@@ -28,8 +28,8 @@ jobs:
           # Get the public IP address of the instance
           PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
           echo "Instance Public IP: $PUBLIC_IP"
-          echo "PUBLIC_IP=${PUBLIC_IP}" >> $GITHUB_ENV
-      
+          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_OUTPUT
+
       - name: Build Docker Image
         run: docker build -t 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest .
 
