@@ -21,7 +21,7 @@ jobs:
 
       - name: Launch EC2 Instance
         run: |
-          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0e0bf53f6def86294 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --query 'Instances[0].InstanceId' --output text)
+          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0c94755bb95c71c99 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --query 'Instances[0].InstanceId' --output text)
           echo "Instance ID: $INSTANCE_ID"
           # Wait for the instance to enter the running state
           aws ec2 wait instance-running --instance-ids $INSTANCE_ID
@@ -31,7 +31,7 @@ jobs:
           echo "PUBLIC_IP=${PUBLIC_IP}" >> $GITHUB_ENV
       
       - name: Build Docker Image
-        run: docker build -t myusername/myapp:latest .
+        run: docker build -t 851725486855.dkr.ecr.us-east-2.amazonaws.com/myapp:latest .
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
@@ -41,9 +41,9 @@ jobs:
 
       - name: Push Image to Amazon ECR
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push 851725486855.dkr.ecr.us-east-2.amazonaws.com/myapp:latest
         env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REGISTRY: 851725486855.dkr.ecr.us-east-2.amazonaws.com
           ECR_REPOSITORY: myapp
           IMAGE_TAG: latest
 
@@ -54,11 +54,11 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker pull 851725486855.dkr.ecr.us-east-2.amazonaws.com/myapp:latest
             docker stop myapp || true
             docker rm myapp || true
-            docker run -d --name myapp -p 80:5000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker run -d --name myapp -p 80:5000 851725486855.dkr.ecr.us-east-2.amazonaws.com/myapp:latest
         env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REGISTRY: 851725486855.dkr.ecr.us-east-2.amazonaws.com
           ECR_REPOSITORY: myapp
           IMAGE_TAG: latest
