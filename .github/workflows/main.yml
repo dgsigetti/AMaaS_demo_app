@@ -9,8 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -29,7 +27,7 @@ jobs:
           PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
           echo "Instance Public IP: $PUBLIC_IP"
           echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_OUTPUT
-      
+
       - name: SSH and Deploy Application to Instance
         uses: appleboy/ssh-action@master
         with:
@@ -38,5 +36,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           protocol: tcp
-          timeout: 30s
+          timeout: 60s
           command_timeout: 10m
