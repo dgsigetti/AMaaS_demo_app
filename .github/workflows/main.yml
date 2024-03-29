@@ -23,10 +23,10 @@ jobs:
           echo "Instance ID: $INSTANCE_ID"
           # Wait for the instance to enter the running state
           aws ec2 wait instance-running --instance-ids $INSTANCE_ID
-          # Get the public IP address of the instance
-          PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
-          echo "Instance Public IP: $PUBLIC_IP"
-          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_OUTPUT
+          # Get the public DNS name of the instance
+          PUBLIC_DNS=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicDnsName' --output text)
+          echo "Instance Public DNS: $PUBLIC_DNS"
+          echo "PUBLIC_DNS=$PUBLIC_DNS" >> $GITHUB_OUTPUT
 
       - name: SSH and Deploy Application to Instance
         uses: appleboy/ssh-action@master
