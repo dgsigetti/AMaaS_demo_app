@@ -1,0 +1,107 @@
+name: Spin Up EC2 Instance and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Launch EC2 Instance
+        run: |
+          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0e0bf53f6def86294 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --query 'Instances[0].InstanceId' --output text)
+          echo "Instance ID: $INSTANCE_ID"
+          # Wait for the instance to enter the running state
+          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+          # Get the public IP address of the instance
+          PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+          echo "Instance Public IP: $PUBLIC_IP"
+          echo "PUBLIC_IP=${PUBLIC_IP}" >> $GITHUB_ENV
+      
+      - name: Build Docker Image
+        run: docker build -t myusername/myapp:latest .
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Push Image to Amazon ECR
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: myapp
+          IMAGE_TAG: latest
+
+      - name: SSH and Deploy Application to Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.PUBLIC_IP }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "Deploy your application"
+            # Add your deployment commands here
+            script: |
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run -d --name myapp -p 80:5000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          env:
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: myapp
+            IMAGE_TAG: latest
+
+
+
+
+
+
+
+
+      - name: Build Docker Image
+        run: docker build -t myusername/myapp:latest .
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Push Image to Amazon ECR
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: myapp
+          IMAGE_TAG: latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run -d --name myapp -p 80:5000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: myapp
+          IMAGE_TAG: latest
