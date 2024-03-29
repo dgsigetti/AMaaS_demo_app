@@ -48,7 +48,7 @@ jobs:
           IMAGE_TAG: latest
 
       - name: SSH and Deploy Application to Instance
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.PUBLIC_IP }}
           username: ec2-user
