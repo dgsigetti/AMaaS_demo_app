@@ -29,26 +29,9 @@ jobs:
           PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
           echo "Instance Public IP: $PUBLIC_IP"
           echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_OUTPUT
-
-      - name: Build Docker Image
-        run: docker build -t 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest .
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Push Image to Amazon ECR
-        run: |
-          docker push 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
-        env:
-          ECR_REGISTRY: 851725486855.dkr.ecr.us-east-2.amazonaws.com
-          ECR_REPOSITORY: dans-v1fs
-          IMAGE_TAG: latest
-
+      
       - name: SSH and Deploy Application to Instance
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ env.PUBLIC_IP }}
           username: ec2-user
@@ -57,12 +40,3 @@ jobs:
           protocol: tcp
           timeout: 30s
           command_timeout: 10m
-          script: |
-            docker pull 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
-            docker stop dans-v1fs || true
-            docker rm dans-v1fs || true
-            docker run -d --name dans-v1fs -p 80:5000 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
-        env:
-          ECR_REGISTRY: 851725486855.dkr.ecr.us-east-2.amazonaws.com
-          ECR_REPOSITORY: dans-v1fs
-          IMAGE_TAG: latest
