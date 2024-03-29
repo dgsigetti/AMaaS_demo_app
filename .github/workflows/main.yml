@@ -54,14 +54,11 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo "Deploy your application"
-            # Add your deployment commands here
-            script: |
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             docker stop myapp || true
             docker rm myapp || true
             docker run -d --name myapp -p 80:5000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          env:
-            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-            ECR_REPOSITORY: myapp
-            IMAGE_TAG: latest
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: myapp
+          IMAGE_TAG: latest
