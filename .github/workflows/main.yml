@@ -21,7 +21,7 @@ jobs:
 
       - name: Launch EC2 Instance
         run: |
-          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0c94755bb95c71c99 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --query 'Instances[0].InstanceId' --output text)
+          INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0e0bf53f6def86294 --count 1 --instance-type t2.micro --key-name dans-test --security-group-ids sg-0e9df32b1f3b26d75 --subnet-id subnet-0aa6bc712102c8183 --query 'Instances[0].InstanceId' --output text)
           echo "Instance ID: $INSTANCE_ID"
           # Wait for the instance to enter the running state
           aws ec2 wait instance-running --instance-ids $INSTANCE_ID
