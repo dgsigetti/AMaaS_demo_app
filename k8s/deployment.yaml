@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dans-v1fs
+  template:
+    metadata:
+      labels:
+        app: dans-v1fs
+    spec:
+      containers:
+        - name: dans-v1fs
+          image: 851725486855.dkr.ecr.us-east-2.amazonaws.com/dans-v1fs:latest
+          ports:
+            - containerPort: 5000
