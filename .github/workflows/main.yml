@@ -1,0 +1,61 @@
+name: Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https
+          sudo apt-get install -y curl
+          sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+          sudo apt-get update
+          sudo apt-get install -y kubectl
+
+      - name: Create EKS cluster
+        run: |
+          aws eks create-cluster --name dans-cluster --role-arn arn:aws:iam::851725486855:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS --resources-vpc-config vpc-02b65a71870b6a718, subnetIds=subnet-0aa6bc712102c8183 --region us-east-2
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name dans-cluster --region us-east-2
+
+      - name: Get kubeconfig data
+        run: |
+          KUBE_CONFIG_DATA=$(cat ~/.kube/config | base64)
+          echo "KUBE_CONFIG_DATA=$KUBE_CONFIG_DATA" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t dans-v1fs .
+      
+      - name: Tag Docker image
+        run: |
+          docker tag dans-v1fs:latest ${{ secrets.ECR_REGISTRY }}/dans-v1fs:latest
+      
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/dans-v1fs:latest
+
+      - name: Deploy application to EKS
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
