@@ -96,8 +96,7 @@ def upload_file():
             # Write scan result to MongoDB
             result_entry = {
                 'filename': filename,
-                'scan_result': scan_result,
-                'scan_result_code': scan_result_code
+                'scan_result': scan_result
             }
             collection.insert_one(result_entry)
 
