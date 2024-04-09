@@ -28,7 +28,7 @@ jobs:
 
       - name: Create EKS cluster
         run: |
-          aws eks create-cluster --name dans-cluster --role-arn arn:aws:iam::851725486855:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS --resources-vpc-config subnetIds=subnet-0aa6bc712102c8183 --region us-east-2
+          aws eks create-cluster --name dans-cluster --role-arn arn:aws:iam::851725486855:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS --resources-vpc-config subnetIds=subnet-0aa6bc712102c8183, subnet-09c61a3b46f57ebd5 --region us-east-2
 
       - name: Update kubeconfig
         run: |
