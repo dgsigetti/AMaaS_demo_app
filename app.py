@@ -1,8 +1,11 @@
-from flask import Flask, session, request, redirect, url_for, flash, render_template
+from flask import Flask, request, redirect, url_for, flash, render_template
 from werkzeug.utils import secure_filename
 import os
 import json
 from pymongo import MongoClient
+import argparse
+import amaas.grpc
+import sys
 import secrets
 
 UPLOAD_FOLDER = '/app/uploads'
@@ -32,8 +35,12 @@ def allowed_file(filename):
 
 #function to scan uploaded file
 def scan_uploaded_file(file_path, handle):
-    # Your scan logic here
-    return "Scan result"  # Replace this with your actual scan result
+    try:
+        result = amaas.grpc.scan_file(file_path, handle)
+        return result
+    except Exception as e:
+        print("Error during scanning:", e)
+        return None
 
 @app.route('/', methods=['GET'])
 def root():
@@ -63,7 +70,28 @@ def upload_file():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
 
+            #initialize args with default values
+            args = argparse.Namespace(
+                addr=os.environ.get('C1_ADDRESS'),
+                api_key=os.environ.get('C1_API_KEY'),
+                region=os.environ.get('C1_REGION')
+            )
+
+            #initiate the AMaaS connection
+            handle = amaas.grpc.init(args.addr, args.api_key, args.region)
+
             scan_result = scan_uploaded_file(file_path, handle)
+
+            if scan_result is not None:
+                scan_result_dict = json.loads(scan_result)
+                scan_result_code = scan_result_dict.get('scanResult', -1)
+
+                if scan_result_code == 1:
+                    amaas.grpc.quit(handle)
+                    return render_template('scan_results.html', scan_result_code=1, scan_results=scan_result_dict)
+                print("Scan result:", scan_result)
+                sys.stdout.flush()  #flush the stdout buffer
+            amaas.grpc.quit(handle)
 
             # Write scan result to MongoDB
             result_entry = {
