@@ -17,6 +17,7 @@ COPY templates /app/templates
 RUN pip install --no-cache-dir flask==3.0.2
 RUN pip install visionone-filesecurity
 RUN pip install requests
+RUN pip install pymongo
 
 #set the environment variables (only availabe in us-1 region right now will leave as default) please just add your api key
 ENV C1_ADDRESS="antimalware.us-1.cloudone.trendmicro.com:443"
