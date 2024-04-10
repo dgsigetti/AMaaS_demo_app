@@ -39,7 +39,7 @@ jobs:
 
       - name: Get kubeconfig data
         run: |
-          echo "::set-env name=KUBE_CONFIG_DATA::$(cat ~/.kube/config | base64)"
+          echo "KUBE_CONFIG_DATA=$(cat ~/.kube/config | base64)" >> $GITHUB_ENV
 
       - name: Build Docker image
         run: |
