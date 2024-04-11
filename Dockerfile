@@ -28,4 +28,4 @@ ENV C1_REGION="us-1"
 EXPOSE 5000
 
 #run the Flask application
-CMD ["python", "app.py"
+CMD ["python", "app.py"]
