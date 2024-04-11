@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: v1fs-deployment
+  name: dans-v1fs
 spec:
   replicas: 3
   selector:
@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: dans-v1fs
-        image: DOCKER_IMAGE
+        image: 3137cbf
         ports:
         - containerPort: 80

@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: v1fs-deployment
+  name: dans-v1fs
 spec:
   selector:
-    app: v1fs-app
+    app: dans-v1fs
   ports:
     - protocol: TCP
       port: 80
