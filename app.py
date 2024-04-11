@@ -18,7 +18,7 @@ app.secret_key = secrets.token_hex(32)
 MONGO_HOST = "ec2-3-145-115-146.us-east-2.compute.amazonaws.com"
 MONGO_PORT = 27017
 MONGO_USER = "backupUser"
-MONGO_PASSWORD = ""
+MONGO_PASSWORD = "Capecod12!"
 DATABASE_NAME = "v1fs_db"
 AUTH_DB = "admin"
 
