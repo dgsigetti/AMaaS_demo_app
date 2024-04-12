@@ -112,6 +112,3 @@ def upload_file():
             return render_template('scan_results.html', scan_message="File uploaded successfully.", scan_result_code=0)
 
     return render_template('upload.html')
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
