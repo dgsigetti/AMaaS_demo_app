@@ -15,11 +15,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = secrets.token_hex(32)
 
 # MongoDB connection setup
-MONGO_HOST = "ec2-3-145-115-146.us-east-2.compute.amazonaws.com"
+MONGO_HOST = "YOUR MONGO HOST"
 MONGO_PORT = 27017
-MONGO_USER = "backupUser"
-MONGO_PASSWORD = "Capecod12!"
-DATABASE_NAME = "v1fs_db"
+MONGO_USER = "YOUR DB USER"
+MONGO_PASSWORD = "YOUR DB PW"
+DATABASE_NAME = "YOUR DB NAME"
 AUTH_DB = "admin"
 
 # Construct MongoDB connection URI with authentication
